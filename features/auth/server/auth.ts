@@ -75,3 +75,14 @@ const authConfig = {
 } satisfies NextAuthConfig;
 
 export const { handlers, auth, signIn, signOut } = NextAuth(authConfig);
+
+export async function requireUserId() {
+  const session = await auth();
+  const userId = session?.user?.id;
+
+  if (!userId) {
+    throw new Error("未登录");
+  }
+
+  return userId;
+}

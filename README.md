@@ -33,13 +33,20 @@
 ## 目录结构
 
 ```text
-app/          页面与路由
-components/   业务组件与共享组件
-lib/          常量、校验、工具函数
+app/          路由入口、layout、loading、route handler
+features/     按业务域聚合的组件、server、schemas、types
+shared/       跨 feature 复用的 UI、layout、providers、db、utils
 prisma/       Schema 与 seed 脚本
-server/       鉴权、数据库与服务端 actions
 specs/        SDD 设计文档与任务拆解
+types/        全局声明（如 NextAuth 扩展）
 ```
+
+当前采用 Hybrid feature 架构：
+
+- `app/` 只保留 Next.js App Router 必需的页面与路由壳层
+- `features/` 内部按业务域组织前后端代码，如 `auth`、`questions`、`favorites`、`dashboard`、`landing`
+- `shared/` 只放真正跨域复用的能力，如导航、通用 UI、Providers、数据库客户端、工具函数
+- `prisma/`、`app/api/`、全局配置文件保持在框架约定位置
 
 ## 本地启动
 

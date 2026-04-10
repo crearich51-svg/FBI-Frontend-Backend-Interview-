@@ -1,23 +1,19 @@
 "use server";
 
-import { auth } from "@/features/auth/server/auth";
+import { requireUserId } from "@/features/auth/server/auth";
 import { paginationSchema } from "@/features/questions/constants";
 import { mapQuestionRecordToCardItem } from "@/features/questions/mappers";
 import type { QuestionListQueryInput, QuestionListResult } from "@/features/questions/types";
 import { db } from "@/shared/db/client";
 
 export async function getFavorites(input?: QuestionListQueryInput): Promise<QuestionListResult> {
-  const session = await auth();
-
-  if (!session?.user?.id) {
-    throw new Error("未登录");
-  }
+  const userId = await requireUserId();
 
   const { page, pageSize } = paginationSchema.parse(input ?? {});
 
   const [favorites, total] = await Promise.all([
     db.userFavorite.findMany({
-      where: { userId: session.user.id },
+      where: { userId },
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * pageSize,
       take: pageSize,
@@ -29,12 +25,12 @@ export async function getFavorites(input?: QuestionListQueryInput): Promise<Ques
               orderBy: { name: "asc" },
             },
             answers: {
-              where: { userId: session.user.id },
+              where: { userId },
               select: { status: true },
               take: 1,
             },
             favorites: {
-              where: { userId: session.user.id },
+              where: { userId },
               select: { id: true },
               take: 1,
             },
@@ -42,7 +38,7 @@ export async function getFavorites(input?: QuestionListQueryInput): Promise<Ques
         },
       },
     }),
-    db.userFavorite.count({ where: { userId: session.user.id } }),
+    db.userFavorite.count({ where: { userId } }),
   ]);
 
   return {

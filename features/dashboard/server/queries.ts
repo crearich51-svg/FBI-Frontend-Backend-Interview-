@@ -2,27 +2,23 @@
 
 import { Prisma } from "@prisma/client";
 
+import { requireUserId } from "@/features/auth/server/auth";
 import { CATEGORY_LABELS } from "@/features/questions/constants";
 import type { UserStatsResult } from "@/features/dashboard/types";
-import { auth } from "@/features/auth/server/auth";
 import { db } from "@/shared/db/client";
 
 export async function getUserStats(): Promise<UserStatsResult> {
-  const session = await auth();
-
-  if (!session?.user?.id) {
-    throw new Error("未登录");
-  }
+  const userId = await requireUserId();
 
   const [total, statusGroups, recentAnswers, categoryProgress] = await Promise.all([
     db.question.count(),
     db.userAnswer.groupBy({
       by: ["status"],
-      where: { userId: session.user.id },
+      where: { userId },
       _count: { status: true },
     }),
     db.userAnswer.findMany({
-      where: { userId: session.user.id },
+      where: { userId },
       orderBy: { updatedAt: "desc" },
       take: 10,
       include: {
@@ -42,7 +38,7 @@ export async function getUserStats(): Promise<UserStatsResult> {
       FROM "Question" q
       LEFT JOIN "UserAnswer" ua
         ON ua."questionId" = q."id"
-        AND ua."userId" = ${session.user.id}
+        AND ua."userId" = ${userId}
       GROUP BY q."category"
       ORDER BY q."category" ASC
     `),

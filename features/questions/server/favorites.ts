@@ -2,26 +2,22 @@
 
 import { revalidatePath } from "next/cache";
 
-import { auth } from "@/features/auth/server/auth";
+import { requireUserId } from "@/features/auth/server/auth";
 import { db } from "@/shared/db/client";
 
 export async function addFavorite(questionId: string) {
-  const session = await auth();
-
-  if (!session?.user?.id) {
-    throw new Error("未登录");
-  }
+  const userId = await requireUserId();
 
   await db.userFavorite.upsert({
     where: {
       userId_questionId: {
-        userId: session.user.id,
+        userId,
         questionId,
       },
     },
     update: {},
     create: {
-      userId: session.user.id,
+      userId,
       questionId,
     },
   });
@@ -32,15 +28,11 @@ export async function addFavorite(questionId: string) {
 }
 
 export async function removeFavorite(questionId: string) {
-  const session = await auth();
-
-  if (!session?.user?.id) {
-    throw new Error("未登录");
-  }
+  const userId = await requireUserId();
 
   await db.userFavorite.deleteMany({
     where: {
-      userId: session.user.id,
+      userId,
       questionId,
     },
   });
