@@ -1,0 +1,202 @@
+openapi: 3.1.0
+info:
+  title: Interview Platform Questions API
+  version: 1.0.0
+  description: 题库列表、题目详情、标签与分类统计接口契约。
+servers:
+  - url: http://localhost:3000
+paths:
+  /api/questions:
+    get:
+      summary: 获取题目列表
+      operationId: getQuestions
+      parameters:
+        - in: query
+          name: category
+          schema:
+            $ref: '#/components/schemas/Category'
+        - in: query
+          name: difficulty
+          schema:
+            $ref: '#/components/schemas/Difficulty'
+        - in: query
+          name: tag
+          schema:
+            type: string
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [all, unanswered, mastered, fuzzy, unknown]
+        - in: query
+          name: search
+          schema:
+            type: string
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
+      responses:
+        '200':
+          description: 题目列表响应
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionListResponse'
+  /api/questions/{id}:
+    get:
+      summary: 获取单个题目详情
+      operationId: getQuestionById
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 题目详情
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionDetailResponse'
+        '404':
+          description: 题目不存在
+  /api/questions/tags:
+    get:
+      summary: 获取标签列表
+      operationId: getAllTags
+      responses:
+        '200':
+          description: 标签列表
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TagCount'
+  /api/questions/category-counts:
+    get:
+      summary: 获取分类题目数量
+      operationId: getCategoryCounts
+      responses:
+        '200':
+          description: 分类统计
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: integer
+components:
+  schemas:
+    Category:
+      type: string
+      enum: [HTML_CSS, JAVASCRIPT, BROWSER, NETWORK, FRAMEWORK, ENGINEERING, TYPESCRIPT, NEW_TECH]
+    Difficulty:
+      type: string
+      enum: [BEGINNER, INTERMEDIATE, ADVANCED, EXPERT]
+    AnswerStatus:
+      type: string
+      enum: [MASTERED, FUZZY, UNKNOWN]
+    QuestionCard:
+      type: object
+      required: [id, title, contentPreview, category, difficulty, tags, isFavorited]
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        contentPreview:
+          type: string
+        category:
+          $ref: '#/components/schemas/Category'
+        difficulty:
+          $ref: '#/components/schemas/Difficulty'
+        tags:
+          type: array
+          items:
+            type: string
+        userStatus:
+          $ref: '#/components/schemas/AnswerStatus'
+          nullable: true
+        isFavorited:
+          type: boolean
+    QuestionListResponse:
+      type: object
+      required: [questions, total, totalPages, currentPage]
+      properties:
+        questions:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuestionCard'
+        total:
+          type: integer
+        totalPages:
+          type: integer
+        currentPage:
+          type: integer
+    QuestionDetail:
+      type: object
+      required: [id, title, content, answer, category, subCategory, difficulty, tags]
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        content:
+          type: string
+        answerHint:
+          type: string
+          nullable: true
+        answer:
+          type: string
+        deepKnowledge:
+          type: string
+          nullable: true
+        category:
+          $ref: '#/components/schemas/Category'
+        subCategory:
+          type: string
+        difficulty:
+          $ref: '#/components/schemas/Difficulty'
+        tags:
+          type: array
+          items:
+            type: string
+    QuestionDetailResponse:
+      type: object
+      required: [question, isFavorited, prevId, nextId]
+      properties:
+        question:
+          $ref: '#/components/schemas/QuestionDetail'
+        userAnswer:
+          type: object
+          nullable: true
+          properties:
+            status:
+              $ref: '#/components/schemas/AnswerStatus'
+        isFavorited:
+          type: boolean
+        prevId:
+          type: string
+          nullable: true
+        nextId:
+          type: string
+          nullable: true
+    TagCount:
+      type: object
+      required: [name, count]
+      properties:
+        name:
+          type: string
+        count:
+          type: integer

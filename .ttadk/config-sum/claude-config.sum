@@ -1,0 +1,40 @@
+{
+  "ai_tool": "claude",
+  "ttadk_version": "0.3.13",
+  "created_date": "2026-04-05",
+  "preferred_language": "zh",
+  "preset": "ttadk/frontend",
+  "preset_state": {
+    "preset_ref": {
+      "name": "ttadk/frontend",
+      "git_repo": "git@code.byted.org:tiktok/ttadk_plugin_market.git",
+      "branch": "master"
+    },
+    "managed_plugins": [
+      {
+        "git_repo": "git@code.byted.org:tiktok/ttadk_plugin_market.git",
+        "plugins": [
+          "ttadk/core",
+          "ttadk/frontend-platform"
+        ]
+      }
+    ],
+    "last_synced_at": "2026-04-09T11:43:32.579Z"
+  },
+  "plugins": [
+    {
+      "name": "ttadk/core",
+      "git_repo": "git@code.byted.org:tiktok/ttadk_plugin_market.git",
+      "branch": "master",
+      "commit": "f167b6d98fdbf273be8906d93d2497d0850f0f6b",
+      "updated_at": "2026-04-09T16:20:12.531Z"
+    },
+    {
+      "name": "ttadk/frontend-platform",
+      "git_repo": "git@code.byted.org:tiktok/ttadk_plugin_market.git",
+      "branch": "master",
+      "commit": "99b9189491d360521b9585f34b32a1194b4e425e",
+      "updated_at": "2026-04-05T11:32:58.584Z"
+    }
+  ]
+}

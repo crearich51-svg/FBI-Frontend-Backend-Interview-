@@ -1,0 +1,125 @@
+openapi: 3.1.0
+info:
+  title: Interview Platform Auth API
+  version: 1.0.0
+  description: 鉴权与会话相关接口契约，供注册、登录、登出与 OAuth 流程参考。
+servers:
+  - url: http://localhost:3000
+paths:
+  /api/auth/register:
+    post:
+      summary: 注册新用户
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: 注册成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthUserResponse'
+        '400':
+          description: 参数错误或邮箱已存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/auth/login:
+    post:
+      summary: 邮箱密码登录
+      operationId: loginWithCredentials
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: 登录成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthUserResponse'
+        '401':
+          description: 邮箱或密码错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/auth/logout:
+    post:
+      summary: 登出当前用户
+      operationId: logoutCurrentUser
+      responses:
+        '204':
+          description: 登出成功
+  /api/auth/providers/github:
+    get:
+      summary: 发起 GitHub OAuth 登录
+      operationId: startGithubOAuth
+      responses:
+        '302':
+          description: 重定向到 GitHub 授权页
+components:
+  schemas:
+    RegisterRequest:
+      type: object
+      required: [name, email, password, confirmPassword]
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 50
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+          maxLength: 100
+          pattern: '^(?=.*[A-Z])(?=.*\\d).+$'
+        confirmPassword:
+          type: string
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+    AuthUserResponse:
+      type: object
+      required: [user, redirectTo]
+      properties:
+        user:
+          type: object
+          required: [id, email]
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+              nullable: true
+            email:
+              type: string
+              format: email
+            image:
+              type: string
+              nullable: true
+        redirectTo:
+          type: string
+          enum: [/dashboard, /]
+    ErrorResponse:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string

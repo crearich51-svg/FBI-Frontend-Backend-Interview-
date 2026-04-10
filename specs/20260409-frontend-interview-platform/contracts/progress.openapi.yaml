@@ -1,0 +1,195 @@
+openapi: 3.1.0
+info:
+  title: Interview Platform Progress API
+  version: 1.0.0
+  description: 自评、收藏与统计相关接口契约。
+servers:
+  - url: http://localhost:3000
+paths:
+  /api/answers:
+    post:
+      summary: 写入或更新自评状态
+      operationId: upsertAnswer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnswerUpsertRequest'
+      responses:
+        '200':
+          description: 写入成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserAnswerResponse'
+  /api/stats:
+    get:
+      summary: 获取用户刷题统计
+      operationId: getUserStats
+      responses:
+        '200':
+          description: 统计结果
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserStatsResponse'
+  /api/favorites:
+    get:
+      summary: 获取收藏列表
+      operationId: getFavorites
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
+      responses:
+        '200':
+          description: 收藏列表
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FavoriteListResponse'
+    post:
+      summary: 添加收藏
+      operationId: addFavorite
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FavoriteMutationRequest'
+      responses:
+        '204':
+          description: 收藏成功
+    delete:
+      summary: 取消收藏
+      operationId: removeFavorite
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FavoriteMutationRequest'
+      responses:
+        '204':
+          description: 取消成功
+components:
+  schemas:
+    AnswerStatus:
+      type: string
+      enum: [MASTERED, FUZZY, UNKNOWN]
+    AnswerUpsertRequest:
+      type: object
+      required: [questionId, status]
+      properties:
+        questionId:
+          type: string
+        status:
+          $ref: '#/components/schemas/AnswerStatus'
+    UserAnswerResponse:
+      type: object
+      required: [id, userId, questionId, status, updatedAt]
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        questionId:
+          type: string
+        status:
+          $ref: '#/components/schemas/AnswerStatus'
+        updatedAt:
+          type: string
+          format: date-time
+    FavoriteMutationRequest:
+      type: object
+      required: [questionId]
+      properties:
+        questionId:
+          type: string
+    FavoriteQuestion:
+      type: object
+      required: [id, title, category, difficulty, tags, isFavorited]
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        category:
+          type: string
+        difficulty:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        isFavorited:
+          type: boolean
+    FavoriteListResponse:
+      type: object
+      required: [questions, total]
+      properties:
+        questions:
+          type: array
+          items:
+            $ref: '#/components/schemas/FavoriteQuestion'
+        total:
+          type: integer
+    CategoryProgress:
+      type: object
+      required: [category, total, mastered]
+      properties:
+        category:
+          type: string
+        total:
+          type: integer
+        mastered:
+          type: integer
+    RecentAnswer:
+      type: object
+      required: [question, status, updatedAt]
+      properties:
+        question:
+          type: object
+          required: [id, title]
+          properties:
+            id:
+              type: string
+            title:
+              type: string
+        status:
+          $ref: '#/components/schemas/AnswerStatus'
+        updatedAt:
+          type: string
+          format: date-time
+    UserStatsResponse:
+      type: object
+      required: [total, mastered, fuzzy, unknown, unanswered, categoryProgress, recentAnswers]
+      properties:
+        total:
+          type: integer
+        mastered:
+          type: integer
+        fuzzy:
+          type: integer
+        unknown:
+          type: integer
+        unanswered:
+          type: integer
+        categoryProgress:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryProgress'
+        recentAnswers:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecentAnswer'
